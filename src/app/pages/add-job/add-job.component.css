@@ -1,0 +1,223 @@
+.add-job-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: var(--spacing-2xl) var(--spacing-lg);
+  animation: fadeIn 0.5s ease-out;
+}
+
+.form-header {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: var(--spacing-lg);
+  transition: all var(--transition-fast);
+}
+
+.back-link:hover {
+  color: var(--primary-color);
+  gap: var(--spacing-md);
+}
+
+.form-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: var(--spacing-xs);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.form-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.125rem;
+  margin: 0;
+}
+
+.job-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.form-card {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+  border: 2px solid transparent;
+  transition: all var(--transition-base);
+}
+
+.form-card:hover {
+  border-color: var(--primary-color);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-lg);
+}
+
+.form-group {
+  margin-bottom: var(--spacing-lg);
+}
+
+.form-label {
+  display: block;
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+}
+
+.form-control,
+.form-select,
+.form-textarea {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  font-family: inherit;
+}
+
+.form-control:focus,
+.form-select:focus,
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background-color: white;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-control::placeholder,
+.form-textarea::placeholder {
+  color: var(--text-light);
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+  appearance: none;
+  cursor: pointer;
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  justify-content: flex-end;
+  padding-top: var(--spacing-lg);
+}
+
+.form-actions .btn {
+  min-width: 180px;
+}
+
+/* Validation Styles */
+.form-control:invalid:not(:placeholder-shown),
+.form-select:invalid:not(:placeholder-shown),
+.form-textarea:invalid:not(:placeholder-shown) {
+  border-color: var(--error-color);
+}
+
+.form-control:invalid:not(:placeholder-shown):focus,
+.form-select:invalid:not(:placeholder-shown):focus,
+.form-textarea:invalid:not(:placeholder-shown):focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.form-control:valid:not(:placeholder-shown),
+.form-select:valid:not(:placeholder-shown) {
+  border-color: var(--success-color);
+}
+
+/* Loading State */
+.spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .add-job-container {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+
+  .form-title {
+    font-size: 2rem;
+  }
+
+  .form-card {
+    padding: var(--spacing-lg);
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+
+  .card-section-title {
+    font-size: 1.25rem;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions .btn {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .add-job-container {
+    padding: var(--spacing-md) var(--spacing-sm);
+  }
+
+  .form-title {
+    font-size: 1.75rem;
+  }
+
+  .form-card {
+    padding: var(--spacing-md);
+  }
+}

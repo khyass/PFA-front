@@ -1,0 +1,8 @@
+.app-main {
+  min-height: calc(100vh - 70px);
+  background: var(--bg-secondary);
+}
+
+.app-main.no-navbar {
+  min-height: 100vh;
+}

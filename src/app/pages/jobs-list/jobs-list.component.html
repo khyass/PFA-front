@@ -1,0 +1,142 @@
+<div class="jobs-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Mes Candidatures</h1>
+      <p class="page-subtitle">Gérez toutes vos candidatures en un seul endroit</p>
+    </div>
+    <a routerLink="/add-job" class="btn btn-primary btn-lg">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      <span>Nouvelle Candidature</span>
+    </a>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="search-box">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <path d="m21 21-4.35-4.35"></path>
+      </svg>
+      <input 
+        type="text" 
+        placeholder="Rechercher par entreprise, poste ou localisation..." 
+        class="search-input"
+        [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value)"
+      />
+    </div>
+
+    <div class="filter-buttons">
+      <button 
+        class="filter-btn" 
+        [class.active]="filterStatus() === 'all'"
+        (click)="filterStatus.set('all')"
+      >
+        Tous ({{ candidatures().length }})
+      </button>
+      <button 
+        class="filter-btn filter-btn-info" 
+        [class.active]="filterStatus() === 'applied'"
+        (click)="filterStatus.set('applied')"
+      >
+        Envoyées
+      </button>
+      <button 
+        class="filter-btn filter-btn-warning" 
+        [class.active]="filterStatus() === 'interview'"
+        (click)="filterStatus.set('interview')"
+      >
+        Entretiens
+      </button>
+      <button 
+        class="filter-btn filter-btn-success" 
+        [class.active]="filterStatus() === 'offer'"
+        (click)="filterStatus.set('offer')"
+      >
+        Offres
+      </button>
+      <button 
+        class="filter-btn filter-btn-error" 
+        [class.active]="filterStatus() === 'rejected'"
+        (click)="filterStatus.set('rejected')"
+      >
+        Refusées
+      </button>
+    </div>
+  </div>
+
+  <!-- Jobs List -->
+  <div class="jobs-list" *ngIf="filteredJobs().length > 0">
+      <div class="application-card" *ngFor="let candidature of filteredJobs()">
+      <div class="job-card-main">
+        <div class="job-header">
+          <div class="company-section">
+            <div class="company-avatar">
+              {{ candidature.companyName.charAt(0) }}
+            </div>
+            <div class="company-details">
+              <h3 class="company-name">{{ candidature.companyName }}</h3>
+              <h4 class="position-title">{{ candidature.jobTitle }}</h4>
+            </div>
+          </div>
+          <span class="badge" [ngClass]="getStatusBadgeClass(candidature.status)">
+            {{ getStatusLabel(candidature.status) }}
+          </span>
+        </div>
+
+        <p class="job-description" *ngIf="candidature.coverLetter">{{ candidature.coverLetter }}</p>
+
+        <div class="job-info">
+          <div class="info-item">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+            <span>{{ formatDate(candidature.appliedDate) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="job-card-actions">
+        <button class="action-btn action-btn-edit">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+          </svg>
+          <span>Modifier</span>
+        </button>
+        <button class="action-btn action-btn-delete" (click)="withdrawCandidature(candidature.id)">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span>Retirer</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="filteredJobs().length === 0">
+    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+    </svg>
+    <h3>Aucune candidature trouvée</h3>
+    <p *ngIf="searchQuery() || filterStatus() !== 'all'">Essayez de modifier vos filtres de recherche</p>
+    <p *ngIf="!searchQuery() && filterStatus() === 'all'">Commencez par ajouter votre première candidature</p>
+    <a routerLink="/add-job" class="btn btn-primary">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Ajouter une candidature
+    </a>
+  </div>
+</div>

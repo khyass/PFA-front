@@ -1,0 +1,161 @@
+@import '../login/login.component.css';
+
+/* Additional styles specific to signup */
+
+.benefits-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.benefit-item {
+  display: flex;
+  gap: var(--spacing-md);
+  align-items: flex-start;
+}
+
+.benefit-icon {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  backdrop-filter: blur(10px);
+}
+
+.benefit-item h3 {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0 0 var(--spacing-xs) 0;
+  color: white;
+}
+
+.benefit-item p {
+  font-size: 0.9375rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+/* Password Strength Indicator */
+.password-strength {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-sm);
+}
+
+.strength-bars {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex: 1;
+}
+
+.strength-bar {
+  height: 4px;
+  flex: 1;
+  background: var(--border-color);
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+}
+
+.strength-bar.active {
+  transform: scaleY(1.5);
+}
+
+.strength-bar.weak {
+  background: var(--error-color);
+}
+
+.strength-bar.medium {
+  background: var(--warning-color);
+}
+
+.strength-bar.strong {
+  background: var(--success-color);
+}
+
+.strength-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.strength-label.weak {
+  color: var(--error-color);
+}
+
+.strength-label.medium {
+  color: var(--warning-color);
+}
+
+.strength-label.strong {
+  color: var(--success-color);
+}
+
+/* Terms Checkbox */
+.terms-checkbox {
+  margin-top: calc(var(--spacing-sm) * -1);
+  align-items: flex-start;
+  line-height: 1.5;
+}
+
+.terms-checkbox .checkbox-custom {
+  margin-top: 0.15rem;
+}
+
+.terms-checkbox .link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color var(--transition-fast);
+}
+
+.terms-checkbox .link:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+.login-link {
+  color: var(--primary-color);
+  font-weight: 600;
+  text-decoration: none;
+  margin-left: var(--spacing-xs);
+  transition: color var(--transition-fast);
+}
+
+.login-link:hover {
+  color: var(--primary-dark);
+  text-decoration: underline;
+}
+
+/* Responsive adjustments for signup */
+@media (max-width: 768px) {
+  .benefits-list {
+    gap: var(--spacing-lg);
+  }
+
+  .benefit-icon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .benefit-item h3 {
+    font-size: 1rem;
+  }
+
+  .benefit-item p {
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .benefit-item {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+}

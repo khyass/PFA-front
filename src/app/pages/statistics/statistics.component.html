@@ -1,0 +1,183 @@
+<div class="statistics-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Statistiques</h1>
+      <p class="page-subtitle">Analysez vos performances et suivez vos progrès</p>
+    </div>
+  </div>
+
+  <!-- Key Metrics -->
+  <div class="metrics-grid">
+    <div class="metric-card metric-primary">
+      <div class="metric-header">
+        <div class="metric-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="20" x2="12" y2="10"></line>
+            <line x1="18" y1="20" x2="18" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="16"></line>
+          </svg>
+        </div>
+        <h3>Total Candidatures</h3>
+      </div>
+      <p class="metric-value">{{ stats().total }}</p>
+      <p class="metric-trend positive">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+          <polyline points="17 6 23 6 23 12"></polyline>
+        </svg>
+        +12% ce mois
+      </p>
+    </div>
+
+    <div class="metric-card metric-success">
+      <div class="metric-header">
+        <div class="metric-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+          </svg>
+        </div>
+        <h3>Taux de Réussite</h3>
+      </div>
+      <p class="metric-value">{{ stats().successRate }}%</p>
+      <p class="metric-trend positive">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+          <polyline points="17 6 23 6 23 12"></polyline>
+        </svg>
+        +5% ce mois
+      </p>
+    </div>
+
+    <div class="metric-card metric-info">
+      <div class="metric-header">
+        <div class="metric-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+        </div>
+        <h3>Temps de Réponse</h3>
+      </div>
+      <p class="metric-value">{{ stats().averageResponseTime }} jours</p>
+      <p class="metric-trend neutral">
+        Moyenne actuelle
+      </p>
+    </div>
+
+    <div class="metric-card metric-warning">
+      <div class="metric-header">
+        <div class="metric-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+            <circle cx="9" cy="7" r="4"></circle>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+          </svg>
+        </div>
+        <h3>Entretiens</h3>
+      </div>
+      <p class="metric-value">{{ stats().interview }}</p>
+      <p class="metric-trend positive">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+          <polyline points="17 6 23 6 23 12"></polyline>
+        </svg>
+        2 programmés
+      </p>
+    </div>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="charts-grid">
+    <!-- Monthly Applications Chart -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h2>Candidatures par Mois</h2>
+        <span class="chart-badge">2024</span>
+      </div>
+      <div class="bar-chart">
+        <div class="bar-item" *ngFor="let data of monthlyData()">
+          <div class="bar-wrapper">
+            <div class="bar-fill" [style.height]="getBarHeight(data.applications)"></div>
+            <span class="bar-value">{{ data.applications }}</span>
+          </div>
+          <span class="bar-label">{{ data.month }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Status Distribution -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <h2>Distribution par Statut</h2>
+      </div>
+      <div class="status-chart">
+        <div class="status-item status-applied">
+          <div class="status-bar" [style.width]="(stats().applied / stats().total * 100) + '%'"></div>
+          <div class="status-info">
+            <span class="status-label">Candidatures envoyées</span>
+            <span class="status-value">{{ stats().applied }}</span>
+          </div>
+        </div>
+
+        <div class="status-item status-interview">
+          <div class="status-bar" [style.width]="(stats().interview / stats().total * 100) + '%'"></div>
+          <div class="status-info">
+            <span class="status-label">En entretien</span>
+            <span class="status-value">{{ stats().interview }}</span>
+          </div>
+        </div>
+
+        <div class="status-item status-offer">
+          <div class="status-bar" [style.width]="(stats().offer / stats().total * 100) + '%'"></div>
+          <div class="status-info">
+            <span class="status-label">Offres reçues</span>
+            <span class="status-value">{{ stats().offer }}</span>
+          </div>
+        </div>
+
+        <div class="status-item status-rejected">
+          <div class="status-bar" [style.width]="(stats().rejected / stats().total * 100) + '%'"></div>
+          <div class="status-info">
+            <span class="status-label">Refusées</span>
+            <span class="status-value">{{ stats().rejected }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Companies -->
+  <div class="companies-section">
+    <div class="section-header">
+      <h2>Entreprises les Plus Ciblées</h2>
+    </div>
+    <div class="companies-grid">
+      <div class="company-item" *ngFor="let company of topCompanies(); let i = index">
+        <div class="company-rank">{{ i + 1 }}</div>
+        <div class="company-avatar">{{ company.name.charAt(0) }}</div>
+        <div class="company-info">
+          <h4>{{ company.name }}</h4>
+          <p>{{ company.count }} candidature{{ company.count > 1 ? 's' : '' }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="actions-banner">
+    <div class="banner-content">
+      <h3>Continuez sur votre lancée!</h3>
+      <p>Ajoutez une nouvelle candidature pour améliorer vos statistiques</p>
+    </div>
+    <a routerLink="/add-job" class="btn btn-primary btn-lg">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+      Nouvelle Candidature
+    </a>
+  </div>
+</div>

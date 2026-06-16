@@ -1,9 +1,10 @@
-import { Component, signal, inject } from '@angular/core';
+import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { JobOfferService } from '../../core/services/job-offer.service';
-import { JobOfferRequestDTO, ContractType, ExperienceLevel, JobOfferStatus } from '../../core/models/job-offer.models';
+import { AuthService } from '../../core/services/auth.service';
+import { JobOfferRequestDTO, JobOfferStatus } from '../../core/models/job-offer.models';
 
 @Component({
   selector: 'app-add-job',
@@ -12,43 +13,39 @@ import { JobOfferRequestDTO, ContractType, ExperienceLevel, JobOfferStatus } fro
   templateUrl: './add-job.component.html',
   styleUrls: ['./add-job.component.css']
 })
-export class AddJobComponent {
+export class AddJobComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly jobOfferService = inject(JobOfferService);
+  private readonly authService = inject(AuthService);
 
   protected readonly formData = signal({
     title: '',
     companyName: '',
-    description: '',
-    location: '',
-    contractType: ContractType.CDI,
-    salaryMin: null as number | null,
-    salaryMax: null as number | null,
-    requiredSkills: [] as string[],
-    experienceLevel: ExperienceLevel.INTERMEDIATE,
-    status: JobOfferStatus.PUBLISHED
+    notes: '',
+    status: JobOfferStatus.OPEN
   });
 
-  protected readonly skillInput = signal('');
+  ngOnInit(): void {
+    const profile = this.authService.getUserProfile();
+    if (profile?.attributes?.['companyName']?.[0]) {
+      this.formData.update(data => ({ ...data, companyName: profile.attributes['companyName'][0] }));
+    } else if (profile?.firstName) {
+      this.formData.update(data => ({ ...data, companyName: profile.firstName! }));
+    }
+  }
+
   protected readonly isSubmitting = signal(false);
   protected readonly errorMessage = signal('');
 
   // Enum values for dropdowns
-  protected readonly contractTypes = Object.values(ContractType);
-  protected readonly experienceLevels = Object.values(ExperienceLevel);
   protected readonly statuses = Object.values(JobOfferStatus);
 
   onSubmit(): void {
     this.errorMessage.set('');
 
     // Validation
-    if (!this.formData().title || !this.formData().companyName || !this.formData().description) {
+    if (!this.formData().title || !this.formData().companyName) {
       this.errorMessage.set('Veuillez remplir tous les champs obligatoires');
-      return;
-    }
-
-    if (this.formData().requiredSkills.length === 0) {
-      this.errorMessage.set('Veuillez ajouter au moins une compétence requise');
       return;
     }
 
@@ -57,15 +54,11 @@ export class AddJobComponent {
     const request: JobOfferRequestDTO = {
       title: this.formData().title,
       companyName: this.formData().companyName,
-      description: this.formData().description,
-      location: this.formData().location,
-      contractType: this.formData().contractType,
-      salaryMin: this.formData().salaryMin ?? undefined,
-      salaryMax: this.formData().salaryMax ?? undefined,
-      requiredSkills: this.formData().requiredSkills,
-      experienceLevel: this.formData().experienceLevel,
-      status: this.formData().status
+      status: this.formData().status,
+      notes: this.formData().notes || undefined
     };
+
+    console.log('Submitting job offer:', request);
 
     this.jobOfferService.createJobOffer(request).subscribe({
       next: () => {
@@ -86,23 +79,5 @@ export class AddJobComponent {
     value: ReturnType<typeof this.formData>[K]
   ): void {
     this.formData.update(data => ({ ...data, [field]: value }));
-  }
-
-  addSkill(): void {
-    const skill = this.skillInput().trim();
-    if (skill && !this.formData().requiredSkills.includes(skill)) {
-      this.formData.update(data => ({
-        ...data,
-        requiredSkills: [...data.requiredSkills, skill]
-      }));
-      this.skillInput.set('');
-    }
-  }
-
-  removeSkill(skill: string): void {
-    this.formData.update(data => ({
-      ...data,
-      requiredSkills: data.requiredSkills.filter(s => s !== skill)
-    }));
   }
 }

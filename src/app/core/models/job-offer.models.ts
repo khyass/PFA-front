@@ -1,29 +1,18 @@
 export interface JobOfferRequestDTO {
   title: string;
-  description: string;
   companyName: string;
-  location: string;
-  contractType: ContractType;
-  salaryMin?: number;
-  salaryMax?: number;
-  requiredSkills: string[];
-  experienceLevel: ExperienceLevel;
   status: JobOfferStatus;
+  publishedDate?: string;
+  notes?: string;
 }
 
 export interface JobOfferResponseDTO {
   id: string;
   title: string;
-  description: string;
   companyName: string;
-  location: string;
-  contractType: ContractType;
-  salaryMin?: number;
-  salaryMax?: number;
-  requiredSkills: string[];
-  experienceLevel: ExperienceLevel;
   status: JobOfferStatus;
-  publishedDate: string;
+  publishedDate?: string;
+  notes?: string;
   ownerId: string;
   candidatureCount?: number;
   createdAt: string;
@@ -34,26 +23,10 @@ export interface JobOfferStatusUpdateDTO {
   status: JobOfferStatus;
 }
 
-export enum ContractType {
-  CDI = 'CDI',
-  CDD = 'CDD',
-  STAGE = 'STAGE',
-  ALTERNANCE = 'ALTERNANCE',
-  FREELANCE = 'FREELANCE'
-}
-
-export enum ExperienceLevel {
-  JUNIOR = 'JUNIOR',
-  INTERMEDIATE = 'INTERMEDIATE',
-  SENIOR = 'SENIOR',
-  EXPERT = 'EXPERT'
-}
-
 export enum JobOfferStatus {
-  DRAFT = 'DRAFT',
-  PUBLISHED = 'PUBLISHED',
+  OPEN = 'OPEN',
   CLOSED = 'CLOSED',
-  ARCHIVED = 'ARCHIVED'
+  DRAFT = 'DRAFT'
 }
 
 export interface Page<T> {

@@ -25,25 +25,25 @@ export interface RefreshTokenRequest {
 }
 
 export interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn: number;
-  tokenType: string;
-  userProfile: UserProfile;
+  access_token: string;
+  refresh_token: string;
+  expires_in: number;
+  token_type: string;
+  user_profile: UserProfile;
 }
 
 export interface UserProfile {
-  userId: string;
+  id: string;
   email: string;
   firstName?: string;
   lastName?: string;
   companyName?: string;
   roles: string[];
-  profileComplete: boolean;
+  attributes?: any;
 }
 
 export enum UserRole {
-  CANDIDATE = 'ROLE_CANDIDATE',
-  ENTREPRISE = 'ROLE_ENTREPRISE',
-  ADMIN = 'ROLE_ADMIN'
+  CANDIDATE = 'CANDIDATE',
+  ENTERPRISE = 'ENTERPRISE',
+  ADMIN = 'ADMIN'
 }

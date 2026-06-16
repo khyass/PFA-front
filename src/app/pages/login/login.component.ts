@@ -47,16 +47,17 @@ export class LoginComponent {
       next: (response) => {
         this.isSubmitting.set(false);
         
-        // Get return URL from query params or default to dashboard/jobs based on role
+        // Navigate based on roles from the response
+        const roles = response.user_profile?.roles || [];
         const returnUrl = this.route.snapshot.queryParams['returnUrl'];
         if (returnUrl) {
           this.router.navigateByUrl(returnUrl);
-        } else if (this.authService.isEnterprise()) {
+        } else if (roles.includes('ENTERPRISE')) {
           this.router.navigate(['/dashboard']);
-        } else if (this.authService.isCandidate()) {
+        } else if (roles.includes('CANDIDATE')) {
           this.router.navigate(['/jobs']);
         } else {
-          this.router.navigate(['/']);
+          this.router.navigate(['/jobs']);
         }
       },
       error: (error) => {

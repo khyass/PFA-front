@@ -23,7 +23,7 @@ export class AuthService {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser = isPlatformBrowser(this.platformId);
   
-  private readonly apiUrl = `${environment.apiUrl}/auth`;
+  private readonly apiUrl = `${environment.authServiceUrl}/auth`;
   private readonly TOKEN_KEY = 'access_token';
   private readonly REFRESH_TOKEN_KEY = 'refresh_token';
   private readonly USER_PROFILE_KEY = 'user_profile';
@@ -126,7 +126,8 @@ export class AuthService {
 
   hasRole(role: UserRole): boolean {
     const profile = this.getUserProfile();
-    return profile?.roles?.includes(role) ?? false;
+    if (!profile?.roles) return false;
+    return profile.roles.some(r => r.toUpperCase() === role.toString().toUpperCase());
   }
 
   isCandidate(): boolean {
@@ -134,17 +135,17 @@ export class AuthService {
   }
 
   isEnterprise(): boolean {
-    return this.hasRole(UserRole.ENTREPRISE);
+    return this.hasRole(UserRole.ENTERPRISE);
   }
 
   // Private helper methods
   private handleAuthResponse(response: AuthResponse): void {
     if (this.isBrowser) {
-      localStorage.setItem(this.TOKEN_KEY, response.accessToken);
-      localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
+      localStorage.setItem(this.TOKEN_KEY, response.access_token);
+      localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refresh_token);
     }
-    this.saveUserProfile(response.userProfile);
-    this.currentUserSubject.next(response.userProfile);
+    this.saveUserProfile(response.user_profile);
+    this.currentUserSubject.next(response.user_profile);
     this.isAuthenticated.set(true);
   }
 

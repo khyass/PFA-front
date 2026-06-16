@@ -1,19 +1,29 @@
 <div class="add-job-container">
   <div class="form-header">
-    <a routerLink="/jobs" class="back-link">
+    <a routerLink="/dashboard" class="back-link">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <line x1="19" y1="12" x2="5" y2="12"></line>
         <polyline points="12 19 5 12 12 5"></polyline>
       </svg>
       Retour
     </a>
-    <h1 class="form-title">Nouvelle Candidature</h1>
-    <p class="form-subtitle">Enregistrez les détails de votre candidature</p>
+    <h1 class="form-title">Nouvelle Offre d'Emploi</h1>
+    <p class="form-subtitle">Publiez une nouvelle offre d'emploi</p>
   </div>
 
   <form (ngSubmit)="onSubmit()" class="job-form">
+    <!-- Error Message -->
+    <div class="error-alert" *ngIf="errorMessage()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="12" y1="8" x2="12" y2="12"></line>
+        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+      </svg>
+      <span>{{ errorMessage() }}</span>
+    </div>
+
     <div class="form-card">
-      <h2 class="card-section-title">Informations Générales</h2>
+      <h2 class="card-section-title">Informations de l'Offre</h2>
       
       <div class="form-row">
         <div class="form-group">
@@ -27,13 +37,14 @@
             placeholder="Ex: Google, Microsoft..."
             [value]="formData().companyName"
             (input)="updateField('companyName', $any($event.target).value)"
+            [readonly]="!!formData().companyName"
             required
           />
         </div>
 
         <div class="form-group">
           <label for="position" class="form-label">
-            Poste *
+            Titre du poste *
           </label>
           <input
             type="text"
@@ -49,63 +60,17 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label for="location" class="form-label">
-            Localisation *
-          </label>
-          <input
-            type="text"
-            id="location"
-            class="form-control"
-            placeholder="Ex: Paris, Remote..."
-            [value]="formData().location"
-            (input)="updateField('location', $any($event.target).value)"
-            required
-          />
-        </div>
-
-        <div class="form-group">
-          <label for="salary" class="form-label">
-            Salaire (optionnel)
-          </label>
-          <input
-            type="number"
-            id="salaryMin"
-            class="form-control"
-            placeholder="Salaire minimum"
-            [value]="formData().salaryMin"
-            (input)="updateField('salaryMin', $any($event.target).valueAsNumber || null)"
-          />
-        </div>
-      </div>
-
-      <div class="form-row">
-        <div class="form-group">
           <label for="status" class="form-label">
             Statut *
           </label>
           <select
-            id="contractType"
+            id="status"
             class="form-select"
-            [value]="formData().contractType"
-            (change)="updateField('contractType', $any($event.target).value)"
+            [value]="formData().status"
+            (change)="updateField('status', $any($event.target).value)"
             required
           >
-            <option *ngFor="let type of contractTypes" [value]="type">{{ type }}</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="experienceLevel" class="form-label">
-            Niveau d'expérience *
-          </label>
-          <select
-            id="experienceLevel"
-            class="form-select"
-            [value]="formData().experienceLevel"
-            (change)="updateField('experienceLevel', $any($event.target).value)"
-            required
-          >
-            <option *ngFor="let level of experienceLevels" [value]="level">{{ level }}</option>
+            <option *ngFor="let s of statuses" [value]="s">{{ s }}</option>
           </select>
         </div>
       </div>
@@ -115,46 +80,22 @@
       <h2 class="card-section-title">Détails Supplémentaires</h2>
       
       <div class="form-group">
-        <label for="description" class="form-label">
-          Description du poste
+        <label for="notes" class="form-label">
+          Notes
         </label>
         <textarea
-          id="description"
+          id="notes"
           class="form-textarea"
-          placeholder="Décrivez brièvement le poste..."
+          placeholder="Ajoutez des notes ou une description..."
           rows="4"
-          [value]="formData().description"
-          (input)="updateField('description', $any($event.target).value)"
+          [value]="formData().notes"
+          (input)="updateField('notes', $any($event.target).value)"
         ></textarea>
-      </div>
-
-      <div class="form-group">
-        <label for="requiredSkills" class="form-label">
-          Compétences requises
-        </label>
-        <div class="skills-input-wrapper">
-          <input
-            type="text"
-            id="skillInput"
-            class="form-control"
-            placeholder="Tapez une compétence et appuyez sur Entrée"
-            [value]="skillInput()"
-            (input)="skillInput.set($any($event.target).value)"
-            (keydown.enter)="$event.preventDefault(); addSkill()"
-          />
-          <button type="button" class="btn btn-outline" (click)="addSkill()">Ajouter</button>
-        </div>
-        <div class="skills-list" *ngIf="formData().requiredSkills.length > 0">
-          <span *ngFor="let skill of formData().requiredSkills" class="skill-badge">
-            {{ skill }}
-            <button type="button" (click)="removeSkill(skill)" class="remove-skill">×</button>
-          </span>
-        </div>
       </div>
     </div>
 
     <div class="form-actions">
-      <a routerLink="/jobs" class="btn btn-outline btn-lg">
+      <a routerLink="/dashboard" class="btn btn-outline btn-lg">
         Annuler
       </a>
       <button type="submit" class="btn btn-primary btn-lg" [disabled]="isSubmitting()">
@@ -162,7 +103,7 @@
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
         <span class="spinner" *ngIf="isSubmitting()"></span>
-        <span>{{ isSubmitting() ? 'Enregistrement...' : 'Enregistrer la candidature' }}</span>
+        <span>{{ isSubmitting() ? 'Enregistrement...' : 'Publier l\'offre' }}</span>
       </button>
     </div>
   </form>

@@ -16,7 +16,7 @@ import { CandidatureDTO } from '../models/candidature.models';
 })
 export class JobOfferService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/api/job-offers`;
+  private readonly apiUrl = `${environment.jobOfferServiceUrl}/api/job-offers`;
 
   // Get all job offers with pagination and filters
   getAllJobOffers(
@@ -25,7 +25,8 @@ export class JobOfferService {
     status?: JobOfferStatus,
     company?: string,
     sortBy: string = 'publishedDate',
-    sortDirection: 'asc' | 'desc' = 'desc'
+    sortDirection: 'asc' | 'desc' = 'desc',
+    ownerId?: string
   ): Observable<Page<JobOfferResponseDTO>> {
     let params = new HttpParams()
       .set('page', page.toString())
@@ -37,6 +38,9 @@ export class JobOfferService {
     }
     if (company) {
       params = params.set('company', company);
+    }
+    if (ownerId) {
+      params = params.set('ownerId', ownerId);
     }
 
     return this.http.get<Page<JobOfferResponseDTO>>(this.apiUrl, { params });

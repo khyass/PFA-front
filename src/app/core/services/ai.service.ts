@@ -13,7 +13,7 @@ import {
 })
 export class AiService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/api/ai`;
+  private readonly apiUrl = `${environment.aiServiceUrl}/api/ai`;
 
   // Get AI-powered job suggestions for the authenticated candidate
   getSuggestions(): Observable<SuggestionsResponseDTO> {

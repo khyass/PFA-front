@@ -2,6 +2,7 @@ import { Component, signal, computed, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { JobOfferService } from '../../core/services/job-offer.service';
+import { AuthService } from '../../core/services/auth.service';
 import { JobOfferResponseDTO, JobOfferStatus } from '../../core/models/job-offer.models';
 import { CandidatureDTO } from '../../core/models/candidature.models';
 
@@ -14,6 +15,7 @@ import { CandidatureDTO } from '../../core/models/candidature.models';
 })
 export class DashboardComponent implements OnInit {
   private readonly jobOfferService = inject(JobOfferService);
+  private readonly authService = inject(AuthService);
 
   protected readonly jobOffers = signal<JobOfferResponseDTO[]>([]);
   protected readonly isLoading = signal(false);
@@ -26,7 +28,9 @@ export class DashboardComponent implements OnInit {
 
   loadJobOffers(): void {
     this.isLoading.set(true);
-    this.jobOfferService.getAllJobOffers(0, 50).subscribe({
+    const profile = this.authService.getUserProfile();
+    const ownerId = profile?.id;
+    this.jobOfferService.getAllJobOffers(0, 50, undefined, undefined, 'publishedDate', 'desc', ownerId).subscribe({
       next: (page) => {
         this.jobOffers.set(page.content);
         this.isLoading.set(false);
@@ -54,7 +58,7 @@ export class DashboardComponent implements OnInit {
     const offers = this.jobOffers();
     return {
       total: offers.length,
-      published: offers.filter(offer => offer.status === JobOfferStatus.PUBLISHED).length,
+      open: offers.filter(offer => offer.status === JobOfferStatus.OPEN).length,
       draft: offers.filter(offer => offer.status === JobOfferStatus.DRAFT).length,
       closed: offers.filter(offer => offer.status === JobOfferStatus.CLOSED).length,
       totalCandidatures: offers.reduce((sum, offer) => sum + (offer.candidatureCount || 0), 0)
@@ -63,16 +67,15 @@ export class DashboardComponent implements OnInit {
 
   protected readonly recentOffers = computed(() => {
     return [...this.jobOffers()]
-      .sort((a, b) => new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime())
+      .sort((a, b) => new Date(b.publishedDate || b.createdAt).getTime() - new Date(a.publishedDate || a.createdAt).getTime())
       .slice(0, 5);
   });
 
   getStatusBadgeClass(status: JobOfferStatus): string {
     const classes: Record<JobOfferStatus, string> = {
       [JobOfferStatus.DRAFT]: 'badge-info',
-      [JobOfferStatus.PUBLISHED]: 'badge-success',
-      [JobOfferStatus.CLOSED]: 'badge-warning',
-      [JobOfferStatus.ARCHIVED]: 'badge-error'
+      [JobOfferStatus.OPEN]: 'badge-success',
+      [JobOfferStatus.CLOSED]: 'badge-warning'
     };
     return classes[status] || 'badge-info';
   }
@@ -80,9 +83,8 @@ export class DashboardComponent implements OnInit {
   getStatusLabel(status: JobOfferStatus): string {
     const labels: Record<JobOfferStatus, string> = {
       [JobOfferStatus.DRAFT]: 'Brouillon',
-      [JobOfferStatus.PUBLISHED]: 'Publiée',
-      [JobOfferStatus.CLOSED]: 'Fermée',
-      [JobOfferStatus.ARCHIVED]: 'Archivée'
+      [JobOfferStatus.OPEN]: 'Ouverte',
+      [JobOfferStatus.CLOSED]: 'Fermée'
     };
     return labels[status] || status;
   }
@@ -97,6 +99,21 @@ export class DashboardComponent implements OnInit {
         alert('Erreur lors de la mise à jour du statut');
       }
     });
+  }
+
+  deleteJobOffer(jobId: string, event: Event): void {
+    event.stopPropagation();
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette offre ?')) {
+      this.jobOfferService.deleteJobOffer(jobId).subscribe({
+        next: () => {
+          this.loadJobOffers();
+        },
+        error: (error) => {
+          console.error('Error deleting job offer:', error);
+          alert('Erreur lors de la suppression de l\'offre.');
+        }
+      });
+    }
   }
 
   formatDate(date: string): string {

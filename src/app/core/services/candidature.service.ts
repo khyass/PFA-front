@@ -15,7 +15,7 @@ import {
 })
 export class CandidatureService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = `${environment.apiUrl}/api/candidatures`;
+  private readonly apiUrl = `${environment.candidatureServiceUrl}/api/candidatures`;
 
   // Get all candidatures for the authenticated candidate
   getAllCandidatures(

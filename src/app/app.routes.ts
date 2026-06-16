@@ -22,13 +22,13 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
-    canActivate: [authGuard, roleGuard([UserRole.ENTREPRISE])],
+    canActivate: [authGuard, roleGuard([UserRole.ENTERPRISE])],
     title: 'Dashboard Entreprise - JobTracker'
   },
   {
     path: 'add-job',
     loadComponent: () => import('./pages/add-job/add-job.component').then(m => m.AddJobComponent),
-    canActivate: [authGuard, roleGuard([UserRole.ENTREPRISE])],
+    canActivate: [authGuard, roleGuard([UserRole.ENTERPRISE])],
     title: 'Créer une Offre - JobTracker'
   },
   {
@@ -40,7 +40,7 @@ export const routes: Routes = [
   {
     path: 'job-details/:id',
     loadComponent: () => import('./pages/job-details/job-details.component').then(m => m.JobDetailsComponent),
-    canActivate: [authGuard, roleGuard([UserRole.CANDIDATE])],
+    canActivate: [authGuard, roleGuard([UserRole.CANDIDATE, UserRole.ENTERPRISE])],
     title: 'Détails de l\'Offre - JobTracker'
   },
   {
@@ -48,6 +48,12 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/jobs-list/jobs-list.component').then(m => m.JobsListComponent),
     canActivate: [authGuard, roleGuard([UserRole.CANDIDATE])],
     title: 'Mes Candidatures - JobTracker'
+  },
+  {
+    path: 'profile',
+    loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent),
+    canActivate: [authGuard],
+    title: 'Mon Profil - JobTracker'
   },
   {
     path: 'statistics',

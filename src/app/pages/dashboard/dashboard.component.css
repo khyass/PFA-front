@@ -258,6 +258,16 @@
   flex: 1;
 }
 
+.btn-danger {
+  background-color: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.btn-danger:hover {
+  background-color: #fecaca;
+}
+
 /* Quick Actions */
 .quick-actions-section {
   margin-top: var(--spacing-2xl);

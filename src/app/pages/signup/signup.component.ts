@@ -23,7 +23,7 @@ export class SignupComponent {
     email: '',
     password: '',
     confirmPassword: '',
-    phoneNumber: '',
+    phone: '',
     acceptTerms: false,
     
     // Candidate fields
@@ -32,7 +32,7 @@ export class SignupComponent {
     
     // Enterprise fields
     companyName: '',
-    contactName: '',
+    industry: '',
     website: ''
   });
 
@@ -68,8 +68,8 @@ export class SignupComponent {
         return;
       }
     } else {
-      if (!this.formData().companyName || !this.formData().contactName) {
-        this.errorMessage.set('Veuillez renseigner le nom de l\'entreprise et le contact');
+      if (!this.formData().companyName) {
+        this.errorMessage.set('Veuillez renseigner le nom de l\'entreprise');
         return;
       }
     }
@@ -89,7 +89,7 @@ export class SignupComponent {
       password: this.formData().password,
       firstName: this.formData().firstName,
       lastName: this.formData().lastName,
-      phoneNumber: this.formData().phoneNumber || undefined
+      phone: this.formData().phone || undefined
     };
 
     this.authService.registerCandidate(request).subscribe({
@@ -118,8 +118,7 @@ export class SignupComponent {
       email: this.formData().email,
       password: this.formData().password,
       companyName: this.formData().companyName,
-      contactName: this.formData().contactName,
-      phoneNumber: this.formData().phoneNumber || undefined,
+      industry: this.formData().industry || undefined,
       website: this.formData().website || undefined
     };
 

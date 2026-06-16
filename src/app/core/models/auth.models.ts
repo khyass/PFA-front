@@ -8,15 +8,15 @@ export interface RegisterCandidateRequest {
   password: string;
   firstName: string;
   lastName: string;
-  phoneNumber?: string;
+  phone?: string;
+  skills?: string[];
 }
 
 export interface RegisterEnterpriseRequest {
   email: string;
   password: string;
   companyName: string;
-  contactName: string;
-  phoneNumber?: string;
+  industry?: string;
   website?: string;
 }
 

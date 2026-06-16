@@ -170,22 +170,21 @@
           </div>
 
           <div class="form-group" *ngIf="accountType() === 'enterprise'">
-            <label for="contactName" class="form-label">
-              Nom du contact *
+            <label for="industry" class="form-label">
+              Secteur d'activité
             </label>
             <div class="input-wrapper">
               <svg class="input-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
               </svg>
               <input
                 type="text"
-                id="contactName"
+                id="industry"
                 class="form-control"
-                placeholder="Jean Dupont"
-                [value]="formData().contactName"
-                (input)="updateField('contactName', $any($event.target).value)"
-                required
+                placeholder="Technologie, Finance..."
+                [value]="formData().industry"
+                (input)="updateField('industry', $any($event.target).value)"
               />
             </div>
           </div>

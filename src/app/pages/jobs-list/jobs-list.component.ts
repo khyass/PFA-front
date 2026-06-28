@@ -1,7 +1,7 @@
 import { Component, signal, OnInit, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { CandidatureService } from '../../core/services/candidature.service';
 import { CandidatureResponseDTO, CandidatureStatus } from '../../core/models/candidature.models';
 
@@ -14,6 +14,7 @@ import { CandidatureResponseDTO, CandidatureStatus } from '../../core/models/can
 })
 export class JobsListComponent implements OnInit {
   private readonly candidatureService = inject(CandidatureService);
+  private readonly router = inject(Router);
 
   protected readonly candidatures = signal<CandidatureResponseDTO[]>([]);
   protected readonly isLoading = signal(false);
@@ -30,14 +31,8 @@ export class JobsListComponent implements OnInit {
     const query = this.searchQuery().toLowerCase();
     if (query) {
       filtered = filtered.filter(candidature => 
-        candidature.companyName.toLowerCase().includes(query) ||
-        candidature.jobTitle.toLowerCase().includes(query)
-      );
-    }
-
-    if (this.filterStatus() !== 'all') {
-      filtered = filtered.filter(candidature => 
-        candidature.status === this.filterStatus()
+        (candidature.companyName || '').toLowerCase().includes(query) ||
+        (candidature.jobTitle || '').toLowerCase().includes(query)
       );
     }
 
@@ -48,11 +43,21 @@ export class JobsListComponent implements OnInit {
     this.loadCandidatures();
   }
 
+  onFilterChange(status: string): void {
+    this.filterStatus.set(status);
+    this.currentPage.set(0);
+    this.loadCandidatures();
+  }
+
   loadCandidatures(): void {
     this.isLoading.set(true);
+    const status = this.filterStatus() !== 'all' ? this.filterStatus() : undefined;
     this.candidatureService.getAllCandidatures(
       this.currentPage(),
-      this.pageSize
+      this.pageSize,
+      'appliedDate',
+      'desc',
+      status
     ).subscribe({
       next: (page) => {
         this.candidatures.set(page.content);
@@ -70,11 +75,8 @@ export class JobsListComponent implements OnInit {
     const labels: Record<CandidatureStatus, string> = {
       [CandidatureStatus.PENDING]: 'En attente',
       [CandidatureStatus.REVIEWING]: 'En cours d\'examen',
-      [CandidatureStatus.SHORTLISTED]: 'Présélectionné',
-      [CandidatureStatus.INTERVIEW_SCHEDULED]: 'Entretien planifié',
-      [CandidatureStatus.REJECTED]: 'Refusée',
       [CandidatureStatus.ACCEPTED]: 'Acceptée',
-      [CandidatureStatus.WITHDRAWN]: 'Retirée'
+      [CandidatureStatus.REJECTED]: 'Refusée'
     };
     return labels[status] || status;
   }
@@ -82,12 +84,9 @@ export class JobsListComponent implements OnInit {
   getStatusBadgeClass(status: CandidatureStatus): string {
     const classes: Record<CandidatureStatus, string> = {
       [CandidatureStatus.PENDING]: 'badge-info',
-      [CandidatureStatus.REVIEWING]: 'badge-info',
-      [CandidatureStatus.SHORTLISTED]: 'badge-warning',
-      [CandidatureStatus.INTERVIEW_SCHEDULED]: 'badge-warning',
-      [CandidatureStatus.REJECTED]: 'badge-error',
+      [CandidatureStatus.REVIEWING]: 'badge-warning',
       [CandidatureStatus.ACCEPTED]: 'badge-success',
-      [CandidatureStatus.WITHDRAWN]: 'badge-error'
+      [CandidatureStatus.REJECTED]: 'badge-error'
     };
     return classes[status] || 'badge-info';
   }
@@ -112,6 +111,17 @@ export class JobsListComponent implements OnInit {
         }
       });
     }
+  }
+
+  editCandidature(candidature: CandidatureResponseDTO): void {
+    if (candidature.status !== CandidatureStatus.PENDING) {
+      return;
+    }
+    this.router.navigate(['/edit-candidature', candidature.id]);
+  }
+
+  hasAlreadyApplied(jobOfferId: string): boolean {
+    return this.candidatures().some(c => c.jobOfferId === jobOfferId);
   }
 
   nextPage(): void {

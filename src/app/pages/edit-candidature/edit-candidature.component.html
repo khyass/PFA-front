@@ -1,0 +1,43 @@
+<div class="edit-container" *ngIf="candidature()">
+  <button class="back-button" (click)="goBack()">
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="19" y1="12" x2="5" y2="12"></line>
+      <polyline points="12 19 5 12 12 5"></polyline>
+    </svg>
+    Retour
+  </button>
+
+  <div class="section-card">
+    <h2 class="section-title">Modifier ma candidature</h2>
+    <p class="job-info">{{ candidature()!.jobTitle }} — {{ candidature()!.companyName }}</p>
+
+    <form (ngSubmit)="onSubmit()">
+      <div class="form-group">
+        <label for="coverLetter">Lettre de motivation *</label>
+        <textarea
+          id="coverLetter"
+          [(ngModel)]="coverLetter"
+          name="coverLetter"
+          rows="10"
+          class="form-input"
+          placeholder="Expliquez pourquoi vous êtes le candidat idéal..."
+          required
+        ></textarea>
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage()">{{ errorMessage() }}</div>
+      <div class="success-message" *ngIf="successMessage()">{{ successMessage() }}</div>
+
+      <div class="form-actions">
+        <button type="button" class="btn btn-outline" (click)="goBack()">Annuler</button>
+        <button type="submit" class="btn btn-primary" [disabled]="isSubmitting()">
+          {{ isSubmitting() ? 'Enregistrement...' : 'Enregistrer' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="loading" *ngIf="!candidature()">
+  <p>Chargement...</p>
+</div>

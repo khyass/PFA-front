@@ -2,9 +2,10 @@ import { Component, signal, computed, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { JobOfferService } from '../../core/services/job-offer.service';
+import { CandidatureService } from '../../core/services/candidature.service';
 import { AuthService } from '../../core/services/auth.service';
 import { JobOfferResponseDTO, JobOfferStatus } from '../../core/models/job-offer.models';
-import { CandidatureDTO } from '../../core/models/candidature.models';
+import { CandidatureDTO, CandidatureStatus } from '../../core/models/candidature.models';
 
 @Component({
   selector: 'app-dashboard',
@@ -15,12 +16,15 @@ import { CandidatureDTO } from '../../core/models/candidature.models';
 })
 export class DashboardComponent implements OnInit {
   private readonly jobOfferService = inject(JobOfferService);
+  private readonly candidatureService = inject(CandidatureService);
   private readonly authService = inject(AuthService);
 
   protected readonly jobOffers = signal<JobOfferResponseDTO[]>([]);
   protected readonly isLoading = signal(false);
   protected readonly selectedJobId = signal<string | null>(null);
   protected readonly candidatures = signal<CandidatureDTO[]>([]);
+  protected readonly isLoadingCandidatures = signal(false);
+  protected readonly statusDropdownId = signal<string | null>(null);
 
   ngOnInit(): void {
     this.loadJobOffers();
@@ -44,12 +48,15 @@ export class DashboardComponent implements OnInit {
 
   loadCandidatures(jobId: string): void {
     this.selectedJobId.set(jobId);
+    this.isLoadingCandidatures.set(true);
     this.jobOfferService.getCandidaturesForJobOffer(jobId).subscribe({
       next: (candidatures) => {
         this.candidatures.set(candidatures);
+        this.isLoadingCandidatures.set(false);
       },
       error: (error) => {
         console.error('Error loading candidatures:', error);
+        this.isLoadingCandidatures.set(false);
       }
     });
   }
@@ -122,5 +129,51 @@ export class DashboardComponent implements OnInit {
       month: 'long',
       year: 'numeric'
     }).format(new Date(date));
+  }
+
+  closeCandidatures(): void {
+    this.selectedJobId.set(null);
+    this.candidatures.set([]);
+    this.statusDropdownId.set(null);
+  }
+
+  toggleStatusDropdown(id: string, event: Event): void {
+    event.stopPropagation();
+    this.statusDropdownId.set(this.statusDropdownId() === id ? null : id);
+  }
+
+  getCandidatureStatusLabel(status: CandidatureStatus): string {
+    const labels: Record<CandidatureStatus, string> = {
+      [CandidatureStatus.PENDING]: 'En attente',
+      [CandidatureStatus.REVIEWING]: 'En cours',
+      [CandidatureStatus.ACCEPTED]: 'Acceptée',
+      [CandidatureStatus.REJECTED]: 'Refusée'
+    };
+    return labels[status] || status;
+  }
+
+  getCandidatureStatusClass(status: CandidatureStatus): string {
+    const classes: Record<CandidatureStatus, string> = {
+      [CandidatureStatus.PENDING]: 'cand-badge-pending',
+      [CandidatureStatus.REVIEWING]: 'cand-badge-reviewing',
+      [CandidatureStatus.ACCEPTED]: 'cand-badge-accepted',
+      [CandidatureStatus.REJECTED]: 'cand-badge-rejected'
+    };
+    return classes[status] || 'cand-badge-pending';
+  }
+
+  updateCandidatureStatus(candidatureId: string, newStatus: string): void {
+    this.statusDropdownId.set(null);
+    this.candidatureService.updateCandidatureStatus(candidatureId, newStatus).subscribe({
+      next: () => {
+        if (this.selectedJobId()) {
+          this.loadCandidatures(this.selectedJobId()!);
+        }
+      },
+      error: () => {
+        console.error('Error updating candidature status');
+        alert('Erreur lors de la mise à jour du statut de la candidature.');
+      }
+    });
   }
 }

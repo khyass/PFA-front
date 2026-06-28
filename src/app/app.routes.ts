@@ -50,6 +50,12 @@ export const routes: Routes = [
     title: 'Mes Candidatures - JobTracker'
   },
   {
+    path: 'edit-candidature/:id',
+    loadComponent: () => import('./pages/edit-candidature/edit-candidature.component').then(m => m.EditCandidatureComponent),
+    canActivate: [authGuard, roleGuard([UserRole.CANDIDATE])],
+    title: 'Modifier Candidature - JobTracker'
+  },
+  {
     path: 'profile',
     loadComponent: () => import('./pages/profile/profile.component').then(m => m.ProfileComponent),
     canActivate: [authGuard],

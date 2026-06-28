@@ -22,12 +22,17 @@ export class CandidatureService {
     page: number = 0,
     size: number = 10,
     sortBy: string = 'appliedDate',
-    sortDirection: 'asc' | 'desc' = 'desc'
+    sortDirection: 'asc' | 'desc' = 'desc',
+    status?: string
   ): Observable<Page<CandidatureResponseDTO>> {
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('page', page.toString())
       .set('size', size.toString())
       .set('sort', `${sortBy},${sortDirection}`);
+
+    if (status) {
+      params = params.set('status', status);
+    }
 
     return this.http.get<Page<CandidatureResponseDTO>>(this.apiUrl, { params });
   }
@@ -55,5 +60,10 @@ export class CandidatureService {
   // Withdraw a candidature
   withdrawCandidature(id: string): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
+
+  // Update candidature status (enterprise action)
+  updateCandidatureStatus(id: string, status: string): Observable<void> {
+    return this.http.patch<void>(`${this.apiUrl}/${id}/status`, { status });
   }
 }

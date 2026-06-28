@@ -405,3 +405,237 @@
     font-size: 1.75rem;
   }
 }
+
+/* Candidatures Panel */
+.candidatures-panel {
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-2xl);
+  border: 2px solid var(--primary-color);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.candidatures-panel .section-header {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.candidatures-loading {
+  text-align: center;
+  padding: var(--spacing-xl);
+  color: var(--text-secondary);
+}
+
+.candidatures-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--spacing-lg);
+}
+
+.candidature-card {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  transition: all var(--transition-base);
+  border: 1px solid var(--border-color);
+}
+
+.candidature-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-color);
+}
+
+.candidature-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.candidature-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.125rem;
+  flex-shrink: 0;
+}
+
+.candidature-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.candidature-name {
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 0 0 2px 0;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.candidature-email {
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.candidature-status-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.candidature-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.candidature-badge:hover {
+  opacity: 0.85;
+  transform: scale(1.05);
+}
+
+.cand-badge-pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: #b45309;
+}
+
+.cand-badge-reviewing {
+  background: rgba(59, 130, 246, 0.15);
+  color: #1d4ed8;
+}
+
+.cand-badge-accepted {
+  background: rgba(16, 185, 129, 0.15);
+  color: #047857;
+}
+
+.cand-badge-rejected {
+  background: rgba(239, 68, 68, 0.15);
+  color: #b91c1c;
+}
+
+.status-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  z-index: 10;
+  overflow: hidden;
+  min-width: 140px;
+}
+
+.status-option {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.8125rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.status-option:hover {
+  background: var(--bg-secondary);
+}
+
+.candidature-cover-preview {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 var(--spacing-md) 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.candidature-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--border-color);
+}
+
+.candidature-date {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 0.8125rem;
+  color: var(--text-light);
+}
+
+.resume-link {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  font-size: 0.8125rem;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.resume-link:hover {
+  text-decoration: underline;
+}
+
+.no-candidatures {
+  text-align: center;
+  padding: var(--spacing-2xl);
+  color: var(--text-light);
+}
+
+.no-candidatures svg {
+  margin-bottom: var(--spacing-md);
+  opacity: 0.5;
+}
+
+.no-candidatures p {
+  margin: 0;
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .candidatures-grid {
+    grid-template-columns: 1fr;
+  }
+}

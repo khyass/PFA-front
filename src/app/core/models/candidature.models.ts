@@ -6,7 +6,6 @@ export interface CandidatureRequestDTO {
 
 export interface CandidatureUpdateDTO {
   coverLetter: string;
-  resumeUrl?: string;
 }
 
 export interface CandidatureResponseDTO {
@@ -36,11 +35,8 @@ export interface StatusHistoryDTO {
 export enum CandidatureStatus {
   PENDING = 'PENDING',
   REVIEWING = 'REVIEWING',
-  SHORTLISTED = 'SHORTLISTED',
-  INTERVIEW_SCHEDULED = 'INTERVIEW_SCHEDULED',
-  REJECTED = 'REJECTED',
   ACCEPTED = 'ACCEPTED',
-  WITHDRAWN = 'WITHDRAWN'
+  REJECTED = 'REJECTED'
 }
 
 export interface CandidatureDTO {

@@ -70,7 +70,7 @@ export class AuthService {
       return throwError(() => new Error('No refresh token available'));
     }
 
-    const request: RefreshTokenRequest = { refreshToken };
+    const request: RefreshTokenRequest = { refresh_token: refreshToken };
     return this.http.post<AuthResponse>(`${this.apiUrl}/refresh`, request).pipe(
       tap(response => this.handleAuthResponse(response)),
       catchError(error => {
@@ -84,13 +84,14 @@ export class AuthService {
   logout(): void {
     const refreshToken = this.getRefreshToken();
     
+    // Always clear local auth data regardless of backend response
+    this.clearAuthData();
+
     if (refreshToken) {
-      const request: RefreshTokenRequest = { refreshToken };
+      const request: RefreshTokenRequest = { refresh_token: refreshToken };
       this.http.post(`${this.apiUrl}/logout`, request).subscribe({
-        complete: () => this.clearAuthData()
+        error: (err) => console.warn('Backend logout failed (session cleared locally):', err.status)
       });
-    } else {
-      this.clearAuthData();
     }
   }
 

@@ -21,7 +21,7 @@ export interface RegisterEnterpriseRequest {
 }
 
 export interface RefreshTokenRequest {
-  refreshToken: string;
+  refresh_token: string;
 }
 
 export interface AuthResponse {

@@ -38,3 +38,36 @@ export interface InterviewPrepDTO {
   interviewQuestions: string[];
   matchScore: number;
 }
+
+// --- New: Keyword-based offer suggestions ---
+
+export interface SuggestOffersRequest {
+  keywords: string[];
+}
+
+export interface OfferSuggestionResponse {
+  offerId: string;
+  offerTitle: string;
+  companyName: string;
+  score: number;
+  justification: string;
+}
+
+// --- New: Interview preparation with structured Q&A ---
+
+export interface InterviewPrepRequest {
+  offerId: string;
+  forceRefresh: boolean;
+}
+
+export interface InterviewPrepResponse {
+  jobTitle: string;
+  companyName: string;
+  technicalQuestions: QuestionAnswer[];
+  behavioralQuestions: QuestionAnswer[];
+}
+
+export interface QuestionAnswer {
+  question: string;
+  answerOutline: string;
+}

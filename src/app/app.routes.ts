@@ -68,6 +68,18 @@ export const routes: Routes = [
     title: 'Statistiques - JobTracker'
   },
   {
+    path: 'ai-suggestions',
+    loadComponent: () => import('./pages/ai-suggestions/ai-suggestions.component').then(m => m.AiSuggestionsComponent),
+    canActivate: [authGuard, roleGuard([UserRole.CANDIDATE])],
+    title: 'Suggestions IA - JobTracker'
+  },
+  {
+    path: 'interview-prep/:offerId',
+    loadComponent: () => import('./pages/interview-prep/interview-prep.component').then(m => m.InterviewPrepComponent),
+    canActivate: [authGuard, roleGuard([UserRole.CANDIDATE])],
+    title: 'Préparation Entretien - JobTracker'
+  },
+  {
     path: '**',
     redirectTo: 'login'
   }

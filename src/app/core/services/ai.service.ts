@@ -5,7 +5,11 @@ import { environment } from '../../../environments/environment';
 import {
   SuggestionsResponseDTO,
   JobMatchResponseDTO,
-  InterviewPrepDTO
+  InterviewPrepDTO,
+  SuggestOffersRequest,
+  OfferSuggestionResponse,
+  InterviewPrepRequest,
+  InterviewPrepResponse
 } from '../models/ai.models';
 
 @Injectable({
@@ -33,5 +37,17 @@ export class AiService {
   // Get AI-generated interview questions for a job offer
   getInterviewPrep(jobOfferId: string): Observable<InterviewPrepDTO> {
     return this.http.get<InterviewPrepDTO>(`${this.apiUrl}/interview-prep/${jobOfferId}`);
+  }
+
+  // Keyword-based offer suggestions
+  suggestOffers(keywords: string[]): Observable<OfferSuggestionResponse[]> {
+    const request: SuggestOffersRequest = { keywords };
+    return this.http.post<OfferSuggestionResponse[]>(`${this.apiUrl}/suggest-offers`, request);
+  }
+
+  // AI-powered interview preparation with structured Q&A
+  generateInterviewPrep(offerId: string, forceRefresh = false): Observable<InterviewPrepResponse> {
+    const request: InterviewPrepRequest = { offerId, forceRefresh };
+    return this.http.post<InterviewPrepResponse>(`${this.apiUrl}/interview-prep`, request);
   }
 }

@@ -182,6 +182,25 @@ import { CandidatureRequestDTO } from '../../core/models/candidature.models';
           <form (ngSubmit)="submitApplication()">
             <div class="form-group">
               <label for="coverLetter">Lettre de motivation *</label>
+              <div class="ai-generate-row">
+                <select [(ngModel)]="coverLetterTone" name="coverLetterTone" class="tone-select">
+                  <option value="formal">Formel</option>
+                  <option value="enthusiastic">Enthousiaste</option>
+                  <option value="casual">Décontracté</option>
+                </select>
+                <button type="button" class="btn-ai-generate" (click)="generateCoverLetter()" [disabled]="isGeneratingCoverLetter()">
+                  <span *ngIf="!isGeneratingCoverLetter()">✨ Générer avec IA</span>
+                  <span *ngIf="isGeneratingCoverLetter()" class="ai-loading">
+                    <span class="ai-spinner"></span> Génération en cours...
+                  </span>
+                </button>
+              </div>
+              <div class="ai-loader-overlay" *ngIf="isGeneratingCoverLetter()">
+                <div class="ai-loader-content">
+                  <div class="ai-spinner-large"></div>
+                  <p>L'IA rédige votre lettre de motivation...</p>
+                </div>
+              </div>
               <textarea 
                 id="coverLetter" 
                 rows="8" 
@@ -191,6 +210,7 @@ import { CandidatureRequestDTO } from '../../core/models/candidature.models';
                 placeholder="Expliquez pourquoi vous êtes le candidat idéal pour ce poste..."
                 required
               ></textarea>
+              <div class="ai-error" *ngIf="coverLetterError()">{{ coverLetterError() }}</div>
             </div>
             
             <div class="form-group">
@@ -334,6 +354,41 @@ import { CandidatureRequestDTO } from '../../core/models/candidature.models';
     .prep-question { font-weight: 600; color: #1e293b; margin: 0 0 0.5rem 0; font-size: 0.9rem; }
     .prep-answer { color: #475569; margin: 0; font-size: 0.85rem; line-height: 1.5; }
     .prep-disclaimer { color: #92400e; font-size: 0.8rem; margin-top: 1rem; padding: 0.5rem; background: #fffbeb; border-radius: 6px; }
+
+    .ai-generate-row {
+      display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;
+    }
+    .tone-select {
+      padding: 0.5rem 0.75rem; border: 1px solid #e2e8f0; border-radius: 8px;
+      font-size: 0.85rem; background: white; color: #334155;
+    }
+    .btn-ai-generate {
+      padding: 0.5rem 1rem; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: white; font-weight: 600; font-size: 0.85rem; cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-ai-generate:hover { opacity: 0.9; }
+    .btn-ai-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+    .ai-loading { display: inline-flex; align-items: center; gap: 0.4rem; }
+    .ai-spinner {
+      display: inline-block; width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.4); border-top-color: white;
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    .ai-loader-overlay {
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem; margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-radius: 8px; border: 1px solid #f59e0b;
+    }
+    .ai-loader-content { display: flex; align-items: center; gap: 0.75rem; color: #92400e; font-weight: 500; }
+    .ai-spinner-large {
+      width: 24px; height: 24px;
+      border: 3px solid #fcd34d; border-top-color: #d97706;
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+    }
+    .ai-error { color: #dc2626; font-size: 0.85rem; margin-top: 0.25rem; }
   `]
 })
 export class JobDetailsComponent implements OnInit {
@@ -353,6 +408,9 @@ export class JobDetailsComponent implements OnInit {
   // Candidate fields
   coverLetter = '';
   resumeUrl = '';
+  coverLetterTone = 'formal';
+  isGeneratingCoverLetter = signal(false);
+  coverLetterError = signal('');
 
   // Enterprise edit fields
   editTitle = '';
@@ -502,6 +560,26 @@ export class JobDetailsComponent implements OnInit {
         console.error('Error loading interview prep:', error);
         this.isLoadingPrep.set(false);
         this.prepError.set('Impossible de générer les questions. Veuillez réessayer.');
+      }
+    });
+  }
+
+  generateCoverLetter(): void {
+    const jobId = this.job()?.id;
+    if (!jobId) return;
+
+    this.isGeneratingCoverLetter.set(true);
+    this.coverLetterError.set('');
+
+    this.aiService.generateCoverLetter(jobId, undefined, this.coverLetterTone).subscribe({
+      next: (response) => {
+        this.coverLetter = response.coverLetter;
+        this.isGeneratingCoverLetter.set(false);
+      },
+      error: (error) => {
+        console.error('Error generating cover letter:', error);
+        this.isGeneratingCoverLetter.set(false);
+        this.coverLetterError.set('Impossible de générer la lettre. Veuillez réessayer.');
       }
     });
   }

@@ -1,6 +1,7 @@
 import { Component, signal, computed, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { JobOfferService } from '../../core/services/job-offer.service';
 import { CandidatureService } from '../../core/services/candidature.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -25,6 +26,7 @@ export class DashboardComponent implements OnInit {
   protected readonly candidatures = signal<CandidatureDTO[]>([]);
   protected readonly isLoadingCandidatures = signal(false);
   protected readonly statusDropdownId = signal<string | null>(null);
+  protected readonly showAllCandidatures = signal(false);
 
   ngOnInit(): void {
     this.loadJobOffers();
@@ -135,6 +137,7 @@ export class DashboardComponent implements OnInit {
     this.selectedJobId.set(null);
     this.candidatures.set([]);
     this.statusDropdownId.set(null);
+    this.showAllCandidatures.set(false);
   }
 
   toggleStatusDropdown(id: string, event: Event): void {
@@ -166,13 +169,37 @@ export class DashboardComponent implements OnInit {
     this.statusDropdownId.set(null);
     this.candidatureService.updateCandidatureStatus(candidatureId, newStatus).subscribe({
       next: () => {
-        if (this.selectedJobId()) {
+        if (this.showAllCandidatures()) {
+          this.loadAllCandidatures();
+        } else if (this.selectedJobId()) {
           this.loadCandidatures(this.selectedJobId()!);
         }
       },
       error: () => {
         console.error('Error updating candidature status');
         alert('Erreur lors de la mise à jour du statut de la candidature.');
+      }
+    });
+  }
+
+  loadAllCandidatures(): void {
+    const offers = this.jobOffers();
+    if (offers.length === 0) return;
+
+    this.showAllCandidatures.set(true);
+    this.selectedJobId.set('all');
+    this.isLoadingCandidatures.set(true);
+
+    const requests = offers.map(o => this.jobOfferService.getCandidaturesForJobOffer(o.id));
+    forkJoin(requests).subscribe({
+      next: (results) => {
+        const all = results.flat();
+        this.candidatures.set(all);
+        this.isLoadingCandidatures.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading all candidatures:', error);
+        this.isLoadingCandidatures.set(false);
       }
     });
   }

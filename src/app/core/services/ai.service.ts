@@ -9,7 +9,9 @@ import {
   SuggestOffersRequest,
   OfferSuggestionResponse,
   InterviewPrepRequest,
-  InterviewPrepResponse
+  InterviewPrepResponse,
+  CoverLetterRequest,
+  CoverLetterResponse
 } from '../models/ai.models';
 
 @Injectable({
@@ -49,5 +51,11 @@ export class AiService {
   generateInterviewPrep(offerId: string, forceRefresh = false): Observable<InterviewPrepResponse> {
     const request: InterviewPrepRequest = { offerId, forceRefresh };
     return this.http.post<InterviewPrepResponse>(`${this.apiUrl}/interview-prep`, request);
+  }
+
+  // AI-powered cover letter generation
+  generateCoverLetter(offerId: string, candidateSkills?: string, tone?: string): Observable<CoverLetterResponse> {
+    const request: CoverLetterRequest = { offerId, candidateSkills, tone };
+    return this.http.post<CoverLetterResponse>(`${this.apiUrl}/generate-cover-letter`, request);
   }
 }

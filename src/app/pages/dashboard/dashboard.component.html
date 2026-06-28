@@ -155,7 +155,10 @@
   <!-- Candidatures Panel -->
   <div class="candidatures-panel" *ngIf="selectedJobId()">
     <div class="section-header">
-      <h2 class="section-title">Candidatures reçues</h2>
+      <h2 class="section-title">
+        {{ showAllCandidatures() ? 'Toutes les candidatures' : 'Candidatures reçues' }}
+        <span *ngIf="!isLoadingCandidatures()"> ({{ candidatures().length }})</span>
+      </h2>
       <button class="btn btn-outline btn-sm" (click)="closeCandidatures()">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -255,7 +258,7 @@
         <p>Analysez vos performances</p>
       </a>
 
-      <a routerLink="/jobs" class="action-card">
+      <div class="action-card" (click)="loadAllCandidatures()" style="cursor: pointer;">
         <div class="action-icon action-icon-warning">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
@@ -264,7 +267,7 @@
         </div>
         <h3>Gérer les candidatures</h3>
         <p>Consultez toutes vos candidatures</p>
-      </a>
+      </div>
     </div>
   </div>
 </div>

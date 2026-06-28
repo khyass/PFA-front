@@ -71,3 +71,18 @@ export interface QuestionAnswer {
   question: string;
   answerOutline: string;
 }
+
+// --- New: Cover letter generation ---
+
+export interface CoverLetterRequest {
+  offerId: string;
+  candidateSkills?: string;
+  tone?: string;
+}
+
+export interface CoverLetterResponse {
+  coverLetter: string;
+  jobTitle: string;
+  companyName: string;
+  tone: string;
+}

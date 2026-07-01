@@ -1,290 +1,341 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
+import { Component, signal, inject, OnInit, ElementRef, ViewChild, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AiService } from '../../core/services/ai.service';
-import { InterviewPrepResponse, QuestionAnswer } from '../../core/models/ai.models';
+import { ChatMessage } from '../../core/models/ai.models';
 
 @Component({
   selector: 'app-interview-prep',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   template: `
-    <div class="prep-container">
+    <div class="chat-container">
       <a routerLink="/job-search" class="back-link">← Retour aux offres</a>
 
-      <div class="page-header">
-        <h1 class="page-title">🎯 Préparation Entretien</h1>
-        <p class="page-subtitle" *ngIf="prepData()">
-          {{ prepData()!.jobTitle }} chez {{ prepData()!.companyName }}
+      <div class="chat-header">
+        <h1 class="chat-title">🎯 Coach Entretien IA</h1>
+        <p class="chat-subtitle" *ngIf="jobTitle()">
+          {{ jobTitle() }} chez {{ companyName() }}
         </p>
       </div>
 
-      <!-- Loading State -->
-      <div class="loading-state" *ngIf="isLoading()">
-        <div class="loading-spinner-large"></div>
-        <p>L'IA génère vos questions d'entretien personnalisées...</p>
-        <p class="loading-hint">Cela peut prendre quelques secondes</p>
+      <div class="chat-window" #chatWindow>
+        <!-- Welcome message -->
+        <div class="message assistant-message" *ngIf="messages().length === 0 && !isLoading()">
+          <div class="message-avatar">🤖</div>
+          <div class="message-bubble">
+            <p>Bonjour ! Je suis votre coach d'entretien IA. Je vais vous aider à vous préparer pour ce poste.</p>
+            <p>Vous pouvez me demander :</p>
+            <ul>
+              <li>De vous poser des questions techniques ou comportementales</li>
+              <li>D'évaluer vos réponses et donner du feedback</li>
+              <li>Des conseils sur un sujet spécifique</li>
+            </ul>
+            <p>Tapez votre message pour commencer ! 💬</p>
+          </div>
+        </div>
+
+        <!-- Messages -->
+        <div *ngFor="let msg of messages()" 
+             class="message" 
+             [class.user-message]="msg.role === 'user'" 
+             [class.assistant-message]="msg.role === 'assistant'">
+          <div class="message-avatar">{{ msg.role === 'user' ? '👤' : '🤖' }}</div>
+          <div class="message-bubble">
+            <p *ngFor="let paragraph of msg.content.split('\\n')" [innerHTML]="paragraph"></p>
+          </div>
+        </div>
+
+        <!-- Loading indicator -->
+        <div class="message assistant-message" *ngIf="isLoading()">
+          <div class="message-avatar">🤖</div>
+          <div class="message-bubble typing-indicator">
+            <span></span><span></span><span></span>
+          </div>
+        </div>
       </div>
 
-      <!-- Error State -->
+      <!-- Error -->
       <div class="error-banner" *ngIf="errorMessage()">
         <p>{{ errorMessage() }}</p>
-        <button class="btn-retry" (click)="loadPrep(true)">Réessayer</button>
       </div>
 
-      <!-- Results -->
-      <div class="results" *ngIf="prepData() && !isLoading()">
-        <!-- Regenerate button -->
-        <div class="regenerate-row">
-          <button class="btn-regenerate" (click)="loadPrep(true)" [disabled]="isLoading()">
-            🔄 Régénérer les questions
-          </button>
-        </div>
+      <!-- Input -->
+      <div class="chat-input-container">
+        <textarea 
+          class="chat-input"
+          [(ngModel)]="userInput"
+          (keydown.enter)="onEnter($event)"
+          placeholder="Tapez votre message..."
+          [disabled]="isLoading()"
+          rows="1"
+          #inputField
+        ></textarea>
+        <button class="send-btn" (click)="sendMessage()" [disabled]="isLoading() || !userInput.trim()">
+          ➤
+        </button>
+      </div>
 
-        <!-- Technical Questions -->
-        <div class="section">
-          <h2 class="section-title">💻 Questions techniques ({{ prepData()!.technicalQuestions.length }})</h2>
-          <div class="accordion" *ngFor="let qa of prepData()!.technicalQuestions; let i = index">
-            <button class="accordion-header" (click)="toggleQuestion('tech', i)">
-              <span class="question-number">{{ i + 1 }}</span>
-              <span class="question-text">{{ qa.question }}</span>
-              <span class="accordion-icon" [class.open]="isOpen('tech', i)">▼</span>
-            </button>
-            <div class="accordion-body" *ngIf="isOpen('tech', i)">
-              <p class="answer-label">Points clés à aborder :</p>
-              <p class="answer-outline">{{ qa.answerOutline }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Behavioral Questions -->
-        <div class="section">
-          <h2 class="section-title">🤝 Questions comportementales ({{ prepData()!.behavioralQuestions.length }})</h2>
-          <div class="accordion" *ngFor="let qa of prepData()!.behavioralQuestions; let i = index">
-            <button class="accordion-header" (click)="toggleQuestion('behav', i)">
-              <span class="question-number">{{ i + 1 }}</span>
-              <span class="question-text">{{ qa.question }}</span>
-              <span class="accordion-icon" [class.open]="isOpen('behav', i)">▼</span>
-            </button>
-            <div class="accordion-body" *ngIf="isOpen('behav', i)">
-              <p class="answer-label">Points clés à aborder :</p>
-              <p class="answer-outline">{{ qa.answerOutline }}</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Disclaimer -->
-        <div class="disclaimer">
-          ⚠️ Suggestions générées par IA — utilisez-les comme guide, pas comme un script d'entretien garanti.
-        </div>
+      <div class="disclaimer">
+        ⚠️ Coach IA — les réponses sont générées automatiquement, utilisez-les comme guide de préparation.
       </div>
     </div>
   `,
   styles: [`
-    .prep-container { max-width: 900px; margin: 0 auto; padding: 2rem; }
-    
-    .back-link { color: #667eea; text-decoration: none; display: inline-block; margin-bottom: 1.5rem; }
-    .back-link:hover { text-decoration: underline; }
-    
-    .page-header { margin-bottom: 2rem; }
-    .page-title { font-size: 1.75rem; font-weight: 700; color: #1e293b; margin: 0; }
-    .page-subtitle { color: #64748b; margin-top: 0.5rem; font-size: 1.1rem; }
+    .chat-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 80px);
+    }
 
-    .loading-state {
-      text-align: center;
-      padding: 4rem 2rem;
-      color: #64748b;
+    .back-link { color: #667eea; text-decoration: none; display: inline-block; margin-bottom: 1rem; }
+    .back-link:hover { text-decoration: underline; }
+
+    .chat-header { margin-bottom: 1rem; flex-shrink: 0; }
+    .chat-title { font-size: 1.5rem; font-weight: 700; color: #1e293b; margin: 0; }
+    .chat-subtitle { color: #64748b; margin-top: 0.25rem; font-size: 1rem; }
+
+    .chat-window {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      margin-bottom: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
     }
-    .loading-spinner-large {
-      width: 48px;
-      height: 48px;
-      border: 4px solid #e2e8f0;
-      border-top-color: #667eea;
+
+    .message {
+      display: flex;
+      gap: 0.75rem;
+      max-width: 85%;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .user-message {
+      align-self: flex-end;
+      flex-direction: row-reverse;
+    }
+
+    .assistant-message {
+      align-self: flex-start;
+    }
+
+    .message-avatar {
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+      background: #e2e8f0;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-hint { font-size: 0.85rem; color: #94a3b8; margin-top: 0.5rem; }
+
+    .message-bubble {
+      padding: 0.75rem 1rem;
+      border-radius: 12px;
+      line-height: 1.5;
+      font-size: 0.9rem;
+    }
+
+    .message-bubble p { margin: 0 0 0.5rem 0; }
+    .message-bubble p:last-child { margin-bottom: 0; }
+    .message-bubble ul { margin: 0.5rem 0; padding-left: 1.25rem; }
+    .message-bubble li { margin-bottom: 0.25rem; }
+
+    .user-message .message-bubble {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+
+    .assistant-message .message-bubble {
+      background: white;
+      border: 1px solid #e2e8f0;
+      color: #1e293b;
+      border-bottom-left-radius: 4px;
+    }
+
+    .typing-indicator {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 1rem 1.25rem;
+    }
+
+    .typing-indicator span {
+      width: 8px;
+      height: 8px;
+      background: #94a3b8;
+      border-radius: 50%;
+      animation: bounce 1.4s ease-in-out infinite;
+    }
+
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-6px); }
+    }
 
     .error-banner {
       background: #fef2f2;
       border: 1px solid #fecaca;
       color: #dc2626;
-      padding: 1.5rem;
+      padding: 0.75rem 1rem;
       border-radius: 8px;
-      margin-bottom: 1.5rem;
-      text-align: center;
-    }
-    .btn-retry {
-      margin-top: 0.75rem;
-      padding: 0.5rem 1.25rem;
-      background: #dc2626;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: 500;
-    }
-
-    .regenerate-row { display: flex; justify-content: flex-end; margin-bottom: 1.5rem; }
-    .btn-regenerate {
-      padding: 0.625rem 1.25rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      background: white;
-      cursor: pointer;
-      font-weight: 500;
-      color: #334155;
-      transition: background 0.2s;
-    }
-    .btn-regenerate:hover:not(:disabled) { background: #f8fafc; }
-    .btn-regenerate:disabled { opacity: 0.6; cursor: not-allowed; }
-
-    .section { margin-bottom: 2rem; }
-    .section-title {
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: #1e293b;
-      margin: 0 0 1rem 0;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid #f1f5f9;
-    }
-
-    .accordion {
       margin-bottom: 0.75rem;
-      border: 1px solid #e2e8f0;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    .accordion-header {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 1rem 1.25rem;
-      background: white;
-      border: none;
-      cursor: pointer;
-      text-align: left;
-      font-size: 0.95rem;
-      transition: background 0.2s;
-    }
-    .accordion-header:hover { background: #f8fafc; }
-
-    .question-number {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 28px;
-      height: 28px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border-radius: 50%;
-      font-size: 0.8rem;
-      font-weight: 600;
+      font-size: 0.85rem;
+      text-align: center;
       flex-shrink: 0;
     }
-    .question-text { flex: 1; font-weight: 500; color: #1e293b; }
-    .accordion-icon {
-      color: #94a3b8;
-      font-size: 0.75rem;
-      transition: transform 0.2s;
-    }
-    .accordion-icon.open { transform: rotate(180deg); }
 
-    .accordion-body {
-      padding: 0 1.25rem 1.25rem 3.75rem;
-      background: #f8fafc;
-      border-top: 1px solid #f1f5f9;
+    .chat-input-container {
+      display: flex;
+      gap: 0.75rem;
+      align-items: flex-end;
+      flex-shrink: 0;
     }
 
-    .answer-label {
-      font-size: 0.8rem;
-      color: #64748b;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      margin: 1rem 0 0.5rem 0;
-    }
-    .answer-outline {
-      color: #334155;
-      line-height: 1.6;
+    .chat-input {
+      flex: 1;
+      padding: 0.75rem 1rem;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
       font-size: 0.9rem;
-      margin: 0;
+      resize: none;
+      outline: none;
+      font-family: inherit;
+      line-height: 1.4;
+      max-height: 120px;
+      transition: border-color 0.2s;
     }
+
+    .chat-input:focus { border-color: #667eea; }
+    .chat-input:disabled { background: #f1f5f9; }
+
+    .send-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.2s, transform 0.2s;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover:not(:disabled) { transform: scale(1.05); }
+    .send-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
     .disclaimer {
-      margin-top: 2rem;
-      padding: 1rem;
+      margin-top: 0.75rem;
+      padding: 0.5rem;
       background: #fffbeb;
       border: 1px solid #fde68a;
       border-radius: 8px;
       color: #92400e;
-      font-size: 0.85rem;
+      font-size: 0.75rem;
       text-align: center;
+      flex-shrink: 0;
     }
 
     @media (max-width: 640px) {
-      .prep-container { padding: 1rem; }
-      .accordion-body { padding-left: 1.25rem; }
+      .chat-container { padding: 1rem; height: calc(100vh - 60px); }
+      .message { max-width: 92%; }
     }
   `]
 })
-export class InterviewPrepComponent implements OnInit {
+export class InterviewPrepComponent implements OnInit, AfterViewChecked {
+  @ViewChild('chatWindow') private chatWindow!: ElementRef;
+
   private readonly route = inject(ActivatedRoute);
   private readonly aiService = inject(AiService);
 
-  protected readonly prepData = signal<InterviewPrepResponse | null>(null);
+  protected readonly messages = signal<ChatMessage[]>([]);
   protected readonly isLoading = signal(false);
   protected readonly errorMessage = signal('');
-  private readonly openQuestions = signal<Set<string>>(new Set());
+  protected readonly jobTitle = signal('');
+  protected readonly companyName = signal('');
+
+  protected userInput = '';
   private offerId = '';
+  private shouldScroll = false;
 
   ngOnInit(): void {
     this.offerId = this.route.snapshot.paramMap.get('offerId') || '';
-    if (this.offerId) {
-      this.loadPrep(false);
+  }
+
+  ngAfterViewChecked(): void {
+    if (this.shouldScroll) {
+      this.scrollToBottom();
+      this.shouldScroll = false;
     }
   }
 
-  loadPrep(forceRefresh: boolean): void {
+  onEnter(event: Event): void {
+    event.preventDefault();
+    this.sendMessage();
+  }
+
+  sendMessage(): void {
+    const message = this.userInput.trim();
+    if (!message || this.isLoading()) return;
+
+    // Get history before adding the new user message
+    const history = [...this.messages()];
+
+    // Add user message to UI
+    this.messages.update(msgs => [...msgs, { role: 'user', content: message }]);
+    this.userInput = '';
     this.isLoading.set(true);
     this.errorMessage.set('');
+    this.shouldScroll = true;
 
-    this.aiService.generateInterviewPrep(this.offerId, forceRefresh).subscribe({
-      next: (data) => {
-        this.prepData.set(data);
+    // Send to API with previous history
+    this.aiService.interviewChat(this.offerId, message, history).subscribe({
+      next: (response) => {
+        this.jobTitle.set(response.jobTitle);
+        this.companyName.set(response.companyName);
+        this.messages.update(msgs => [...msgs, { role: 'assistant', content: response.reply }]);
         this.isLoading.set(false);
-        this.openQuestions.set(new Set());
+        this.shouldScroll = true;
       },
       error: (error) => {
-        console.error('Error loading interview prep:', error);
+        console.error('Error in interview chat:', error);
         this.isLoading.set(false);
         if (error.status === 503 || error.status === 502) {
           this.errorMessage.set('Le service IA est temporairement indisponible. Veuillez réessayer.');
         } else {
-          this.errorMessage.set('Impossible de générer les questions. Veuillez réessayer.');
+          this.errorMessage.set('Erreur lors de l\'envoi du message. Veuillez réessayer.');
         }
       }
     });
   }
 
-  toggleQuestion(type: string, index: number): void {
-    const key = `${type}-${index}`;
-    this.openQuestions.update(set => {
-      const newSet = new Set(set);
-      if (newSet.has(key)) {
-        newSet.delete(key);
-      } else {
-        newSet.add(key);
-      }
-      return newSet;
-    });
-  }
-
-  isOpen(type: string, index: number): boolean {
-    return this.openQuestions().has(`${type}-${index}`);
+  private scrollToBottom(): void {
+    try {
+      this.chatWindow.nativeElement.scrollTop = this.chatWindow.nativeElement.scrollHeight;
+    } catch (err) {}
   }
 }

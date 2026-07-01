@@ -75,6 +75,9 @@ export class JobsListComponent implements OnInit {
     const labels: Record<CandidatureStatus, string> = {
       [CandidatureStatus.PENDING]: 'En attente',
       [CandidatureStatus.REVIEWING]: 'En cours d\'examen',
+      [CandidatureStatus.INTERVIEW]: 'Entretien',
+      [CandidatureStatus.OFFER]: 'Offre reçue',
+      [CandidatureStatus.HIRED]: 'Embauché',
       [CandidatureStatus.ACCEPTED]: 'Acceptée',
       [CandidatureStatus.REJECTED]: 'Refusée'
     };
@@ -85,6 +88,9 @@ export class JobsListComponent implements OnInit {
     const classes: Record<CandidatureStatus, string> = {
       [CandidatureStatus.PENDING]: 'badge-info',
       [CandidatureStatus.REVIEWING]: 'badge-warning',
+      [CandidatureStatus.INTERVIEW]: 'badge-interview',
+      [CandidatureStatus.OFFER]: 'badge-offer',
+      [CandidatureStatus.HIRED]: 'badge-success',
       [CandidatureStatus.ACCEPTED]: 'badge-success',
       [CandidatureStatus.REJECTED]: 'badge-error'
     };

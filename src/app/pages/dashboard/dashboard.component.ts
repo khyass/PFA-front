@@ -1,6 +1,7 @@
 import { Component, signal, computed, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { JobOfferService } from '../../core/services/job-offer.service';
 import { CandidatureService } from '../../core/services/candidature.service';
@@ -11,7 +12,7 @@ import { CandidatureDTO, CandidatureStatus } from '../../core/models/candidature
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css']
 })
@@ -27,6 +28,23 @@ export class DashboardComponent implements OnInit {
   protected readonly isLoadingCandidatures = signal(false);
   protected readonly statusDropdownId = signal<string | null>(null);
   protected readonly showAllCandidatures = signal(false);
+
+  // Interview scheduling modal
+  protected readonly showInterviewModal = signal(false);
+  protected readonly interviewCandidatureId = signal<string | null>(null);
+  protected readonly interviewConflict = signal<string | null>(null);
+  protected interviewDate = '';
+  protected interviewNotes = '';
+
+  // Get all scheduled interviews across all candidatures
+  protected readonly scheduledInterviews = computed(() => {
+    return this.candidatures()
+      .filter(c => c.interviewDate && c.status === CandidatureStatus.INTERVIEW)
+      .map(c => ({
+        candidateName: c.candidateName || c.candidateId || 'Candidat',
+        date: c.interviewDate!,
+      }));
+  });
 
   ngOnInit(): void {
     this.loadJobOffers();
@@ -148,7 +166,10 @@ export class DashboardComponent implements OnInit {
   getCandidatureStatusLabel(status: CandidatureStatus): string {
     const labels: Record<CandidatureStatus, string> = {
       [CandidatureStatus.PENDING]: 'En attente',
-      [CandidatureStatus.REVIEWING]: 'En cours',
+      [CandidatureStatus.REVIEWING]: 'En revue',
+      [CandidatureStatus.INTERVIEW]: 'Entretien',
+      [CandidatureStatus.OFFER]: 'Offre',
+      [CandidatureStatus.HIRED]: 'Embauché',
       [CandidatureStatus.ACCEPTED]: 'Acceptée',
       [CandidatureStatus.REJECTED]: 'Refusée'
     };
@@ -159,6 +180,9 @@ export class DashboardComponent implements OnInit {
     const classes: Record<CandidatureStatus, string> = {
       [CandidatureStatus.PENDING]: 'cand-badge-pending',
       [CandidatureStatus.REVIEWING]: 'cand-badge-reviewing',
+      [CandidatureStatus.INTERVIEW]: 'cand-badge-interview',
+      [CandidatureStatus.OFFER]: 'cand-badge-offer',
+      [CandidatureStatus.HIRED]: 'cand-badge-hired',
       [CandidatureStatus.ACCEPTED]: 'cand-badge-accepted',
       [CandidatureStatus.REJECTED]: 'cand-badge-rejected'
     };
@@ -167,19 +191,93 @@ export class DashboardComponent implements OnInit {
 
   updateCandidatureStatus(candidatureId: string, newStatus: string): void {
     this.statusDropdownId.set(null);
+
+    // If moving to INTERVIEW, open the scheduling modal
+    if (newStatus === 'INTERVIEW') {
+      this.interviewCandidatureId.set(candidatureId);
+      this.interviewDate = '';
+      this.interviewNotes = '';
+      this.interviewConflict.set(null);
+      this.showInterviewModal.set(true);
+      return;
+    }
+
     this.candidatureService.updateCandidatureStatus(candidatureId, newStatus).subscribe({
-      next: () => {
-        if (this.showAllCandidatures()) {
-          this.loadAllCandidatures();
-        } else if (this.selectedJobId()) {
-          this.loadCandidatures(this.selectedJobId()!);
-        }
-      },
+      next: () => this.refreshCandidatures(),
       error: () => {
         console.error('Error updating candidature status');
         alert('Erreur lors de la mise à jour du statut de la candidature.');
       }
     });
+  }
+
+  checkInterviewConflict(): void {
+    if (!this.interviewDate) {
+      this.interviewConflict.set(null);
+      return;
+    }
+
+    const newDate = new Date(this.interviewDate);
+    const conflict = this.scheduledInterviews().find(interview => {
+      const existingDate = new Date(interview.date);
+      // Consider conflict if within 1 hour window
+      const diffMs = Math.abs(newDate.getTime() - existingDate.getTime());
+      return diffMs < 60 * 60 * 1000; // 1 hour
+    });
+
+    if (conflict) {
+      const conflictDate = new Date(conflict.date);
+      const formattedDate = conflictDate.toLocaleString('fr-FR', {
+        day: '2-digit', month: '2-digit', year: 'numeric',
+        hour: '2-digit', minute: '2-digit'
+      });
+      this.interviewConflict.set(
+        `⚠️ Conflit : un entretien avec "${conflict.candidateName}" est déjà prévu le ${formattedDate}`
+      );
+    } else {
+      this.interviewConflict.set(null);
+    }
+  }
+
+  confirmInterview(): void {
+    const id = this.interviewCandidatureId();
+    if (!id || !this.interviewDate) return;
+
+    // Block if there's a conflict
+    if (this.interviewConflict()) {
+      return;
+    }
+
+    this.candidatureService.updateCandidatureStatus(
+      id, 'INTERVIEW', undefined, this.interviewDate || undefined, this.interviewNotes || undefined
+    ).subscribe({
+      next: () => {
+        this.showInterviewModal.set(false);
+        this.interviewCandidatureId.set(null);
+        this.interviewConflict.set(null);
+        this.refreshCandidatures();
+      },
+      error: () => {
+        alert('Erreur lors de la planification de l\'entretien.');
+      }
+    });
+  }
+
+  cancelInterviewModal(): void {
+    this.showInterviewModal.set(false);
+    this.interviewCandidatureId.set(null);
+  }
+
+  getCandidaturesByStatus(status: CandidatureStatus): CandidatureDTO[] {
+    return this.candidatures().filter(c => c.status === status);
+  }
+
+  private refreshCandidatures(): void {
+    if (this.showAllCandidatures()) {
+      this.loadAllCandidatures();
+    } else if (this.selectedJobId()) {
+      this.loadCandidatures(this.selectedJobId()!);
+    }
   }
 
   loadAllCandidatures(): void {

@@ -63,7 +63,11 @@ export class CandidatureService {
   }
 
   // Update candidature status (enterprise action)
-  updateCandidatureStatus(id: string, status: string): Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/${id}/status`, { status });
+  updateCandidatureStatus(id: string, status: string, note?: string, interviewDate?: string, interviewNotes?: string): Observable<void> {
+    const body: any = { status };
+    if (note) body.note = note;
+    if (interviewDate) body.interviewDate = interviewDate;
+    if (interviewNotes) body.interviewNotes = interviewNotes;
+    return this.http.patch<void>(`${this.apiUrl}/${id}/status`, body);
   }
 }

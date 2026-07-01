@@ -35,6 +35,9 @@ export interface StatusHistoryDTO {
 export enum CandidatureStatus {
   PENDING = 'PENDING',
   REVIEWING = 'REVIEWING',
+  INTERVIEW = 'INTERVIEW',
+  OFFER = 'OFFER',
+  HIRED = 'HIRED',
   ACCEPTED = 'ACCEPTED',
   REJECTED = 'REJECTED'
 }
@@ -49,6 +52,8 @@ export interface CandidatureDTO {
   resumeUrl?: string;
   status: CandidatureStatus;
   appliedDate: string;
+  interviewDate?: string;
+  interviewNotes?: string;
 }
 
 export interface Page<T> {

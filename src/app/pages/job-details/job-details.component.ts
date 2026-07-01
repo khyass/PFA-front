@@ -7,7 +7,7 @@ import { CandidatureService } from '../../core/services/candidature.service';
 import { AiService } from '../../core/services/ai.service';
 import { AuthService } from '../../core/services/auth.service';
 import { JobOfferResponseDTO, JobOfferStatus } from '../../core/models/job-offer.models';
-import { JobMatchResponseDTO, InterviewPrepResponse } from '../../core/models/ai.models';
+import { JobMatchResponseDTO } from '../../core/models/ai.models';
 import { CandidatureRequestDTO } from '../../core/models/candidature.models';
 
 @Component({
@@ -129,45 +129,18 @@ import { CandidatureRequestDTO } from '../../core/models/candidature.models';
           </div>
         </div>
 
-        <!-- AI Interview Preparation Button -->
+        <!-- AI Interview Chatbot Button -->
         <div class="section-card interview-prep-section">
-          <h3>🎯 Préparation entretien avancée</h3>
-          <p class="prep-description">Obtenez des questions d'entretien personnalisées avec des pistes de réponse générées par IA.</p>
-          
-          <div *ngIf="!interviewPrepData() && !isLoadingPrep()">
-            <button class="btn-save" (click)="loadInterviewPrep(false)">
-              Préparer mon entretien avec l'IA
-            </button>
-          </div>
-
-          <div class="loading-state" *ngIf="isLoadingPrep()">
-            <div class="prep-spinner"></div>
-            <span>Génération en cours...</span>
-          </div>
-
-          <div class="prep-error" *ngIf="prepError()">{{ prepError() }}</div>
-
-          <div *ngIf="interviewPrepData() && !isLoadingPrep()">
-            <div class="prep-section-group">
-              <h4>💻 Questions techniques</h4>
-              <div class="prep-qa" *ngFor="let qa of interviewPrepData()!.technicalQuestions">
-                <p class="prep-question">{{ qa.question }}</p>
-                <p class="prep-answer">{{ qa.answerOutline }}</p>
-              </div>
+          <div class="chatbot-promo">
+            <div class="chatbot-icon">🎯</div>
+            <div class="chatbot-text">
+              <h3>Préparer votre entretien avec l'IA</h3>
+              <p>Discutez en temps réel avec votre coach IA : questions techniques, comportementales, feedback sur vos réponses.</p>
             </div>
-            <div class="prep-section-group">
-              <h4>🤝 Questions comportementales</h4>
-              <div class="prep-qa" *ngFor="let qa of interviewPrepData()!.behavioralQuestions">
-                <p class="prep-question">{{ qa.question }}</p>
-                <p class="prep-answer">{{ qa.answerOutline }}</p>
-              </div>
-            </div>
-            <button class="btn-outline" (click)="loadInterviewPrep(true)">🔄 Régénérer</button>
-            <a [routerLink]="['/interview-prep', job()!.id]" class="btn-outline" style="margin-left: 0.5rem;">
-              Voir en plein écran →
-            </a>
-            <p class="prep-disclaimer">⚠️ Suggestions IA — utilisez comme guide, pas comme script garanti.</p>
           </div>
+          <a [routerLink]="['/interview-prep', job()!.id]" class="btn-chatbot">
+            💬 Lancer le Coach Entretien IA
+          </a>
         </div>
 
         <!-- Notes -->
@@ -339,21 +312,28 @@ import { CandidatureRequestDTO } from '../../core/models/candidature.models';
     .loading { text-align: center; padding: 4rem; }
 
     .interview-prep-section { margin-bottom: 2rem; }
-    .prep-description { color: #64748b; font-size: 0.9rem; margin-bottom: 1rem; }
-    .loading-state { display: flex; align-items: center; gap: 0.75rem; color: #64748b; padding: 1rem 0; }
-    .prep-spinner {
-      width: 20px; height: 20px;
-      border: 2px solid #e2e8f0; border-top-color: #667eea;
-      border-radius: 50%; animation: spin 0.8s linear infinite;
-    }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .prep-error { color: #dc2626; padding: 0.5rem; background: #fef2f2; border-radius: 6px; margin: 0.5rem 0; }
-    .prep-section-group { margin-bottom: 1.5rem; }
-    .prep-section-group h4 { margin: 0 0 0.75rem 0; font-size: 1rem; }
-    .prep-qa { margin-bottom: 1rem; padding: 0.75rem; background: #f8fafc; border-radius: 8px; border-left: 3px solid #667eea; }
-    .prep-question { font-weight: 600; color: #1e293b; margin: 0 0 0.5rem 0; font-size: 0.9rem; }
-    .prep-answer { color: #475569; margin: 0; font-size: 0.85rem; line-height: 1.5; }
-    .prep-disclaimer { color: #92400e; font-size: 0.8rem; margin-top: 1rem; padding: 0.5rem; background: #fffbeb; border-radius: 6px; }
+    .chatbot-promo {
+      display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.25rem;
+    }
+    .chatbot-icon { font-size: 2rem; flex-shrink: 0; }
+    .chatbot-text h3 { margin: 0 0 0.4rem 0; font-size: 1.1rem; color: #1e293b; }
+    .chatbot-text p { margin: 0; color: #64748b; font-size: 0.9rem; line-height: 1.5; }
+    .btn-chatbot {
+      display: block;
+      width: 100%;
+      padding: 0.875rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      text-align: center;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.2s, transform 0.15s;
+      box-sizing: border-box;
+    }
+    .btn-chatbot:hover { opacity: 0.92; transform: translateY(-1px); }
 
     .ai-generate-row {
       display: flex; gap: 0.5rem; margin-bottom: 0.5rem; align-items: center;
@@ -401,9 +381,6 @@ export class JobDetailsComponent implements OnInit {
 
   job = signal<JobOfferResponseDTO | null>(null);
   match = signal<JobMatchResponseDTO | null>(null);
-  interviewPrepData = signal<InterviewPrepResponse | null>(null);
-  isLoadingPrep = signal(false);
-  prepError = signal('');
   
   // Candidate fields
   coverLetter = '';
@@ -542,26 +519,6 @@ export class JobDetailsComponent implements OnInit {
     } else {
       this.router.navigate(['/job-search']);
     }
-  }
-
-  loadInterviewPrep(forceRefresh: boolean): void {
-    const jobId = this.job()?.id;
-    if (!jobId) return;
-
-    this.isLoadingPrep.set(true);
-    this.prepError.set('');
-
-    this.aiService.generateInterviewPrep(jobId, forceRefresh).subscribe({
-      next: (data) => {
-        this.interviewPrepData.set(data);
-        this.isLoadingPrep.set(false);
-      },
-      error: (error) => {
-        console.error('Error loading interview prep:', error);
-        this.isLoadingPrep.set(false);
-        this.prepError.set('Impossible de générer les questions. Veuillez réessayer.');
-      }
-    });
   }
 
   generateCoverLetter(): void {

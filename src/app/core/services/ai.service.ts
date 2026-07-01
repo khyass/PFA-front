@@ -11,7 +11,10 @@ import {
   InterviewPrepRequest,
   InterviewPrepResponse,
   CoverLetterRequest,
-  CoverLetterResponse
+  CoverLetterResponse,
+  InterviewChatRequest,
+  InterviewChatResponse,
+  ChatMessage
 } from '../models/ai.models';
 
 @Injectable({
@@ -57,5 +60,11 @@ export class AiService {
   generateCoverLetter(offerId: string, candidateSkills?: string, tone?: string): Observable<CoverLetterResponse> {
     const request: CoverLetterRequest = { offerId, candidateSkills, tone };
     return this.http.post<CoverLetterResponse>(`${this.apiUrl}/generate-cover-letter`, request);
+  }
+
+  // Chat-based interview preparation
+  interviewChat(offerId: string, message: string, history: ChatMessage[]): Observable<InterviewChatResponse> {
+    const request: InterviewChatRequest = { offerId, message, history };
+    return this.http.post<InterviewChatResponse>(`${this.apiUrl}/interview-chat`, request);
   }
 }

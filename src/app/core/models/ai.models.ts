@@ -72,6 +72,25 @@ export interface QuestionAnswer {
   answerOutline: string;
 }
 
+// --- Interview Chat (Chatbot) ---
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export interface InterviewChatRequest {
+  offerId: string;
+  message: string;
+  history: ChatMessage[];
+}
+
+export interface InterviewChatResponse {
+  reply: string;
+  jobTitle: string;
+  companyName: string;
+}
+
 // --- New: Cover letter generation ---
 
 export interface CoverLetterRequest {

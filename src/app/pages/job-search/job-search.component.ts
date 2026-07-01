@@ -59,18 +59,18 @@ import { JobSuggestionDTO } from '../../core/models/ai.models';
         </div>
         
         <div class="jobs-grid" *ngIf="!isLoading()">
-          <div *ngFor="let job of jobs()" class="job-card" [routerLink]="['/job-details', job.id]">
-            <div class="card-header">
+          <div *ngFor="let job of jobs()" class="job-card">
+            <div class="card-header" [routerLink]="['/job-details', job.id]" style="cursor:pointer">
               <div class="company-avatar">{{ job.companyName.charAt(0) }}</div>
               <div class="card-header-info">
                 <h3 class="job-title">{{ job.title }}</h3>
                 <p class="company-name">{{ job.companyName }}</p>
               </div>
             </div>
-            <p class="job-notes" *ngIf="job.notes">{{ job.notes }}</p>
+            <p class="job-notes" *ngIf="job.notes" [routerLink]="['/job-details', job.id]" style="cursor:pointer">{{ job.notes }}</p>
             <div class="card-footer">
               <span class="status-badge" [class.open]="job.status === 'OPEN'" [class.closed]="job.status === 'CLOSED'" [class.draft]="job.status === 'DRAFT'">{{ job.status }}</span>
-              <span class="published-date" *ngIf="job.publishedDate">{{ $any(job.publishedDate) | date:'mediumDate' }}</span>
+              <a [routerLink]="['/interview-prep', job.id]" class="btn-prep" title="Préparer l'entretien avec l'IA">🎯 Préparer</a>
             </div>
           </div>
         </div>
@@ -260,6 +260,21 @@ import { JobSuggestionDTO } from '../../core/models/ai.models';
       padding-top: 0.75rem;
       border-top: 1px solid #f1f5f9;
     }
+    .btn-prep {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.3rem 0.75rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.2s;
+      white-space: nowrap;
+    }
+    .btn-prep:hover { opacity: 0.85; }
     .status-badge {
       display: inline-block;
       padding: 0.2rem 0.625rem;
